@@ -16,15 +16,17 @@ func main() {
 	if crontab, ok = os.LookupEnv("CRONTAB"); !ok {
 		crontab = "0 * * * *"
 	}
-	fmt.Printf("Starting logrotate with \"%s\"", crontab)
+	fmt.Printf("Starting vault logrotation with \"%s\"\n", crontab)
 	crond.Cron(crontab).Do(run_logrotate)
 	crond.StartBlocking()
 }
 
 func run_logrotate() {
-	cmd := exec.Command("/usr/sbin/logrotate", "/etc/logrotate.conf")
-	fmt.Printf("Starting logration")
+	cmd := exec.Command("/usr/sbin/logrotate", "--state=/tmp/logrotate.status", "/etc/logrotate.conf")
+	fmt.Printf("Starting logrotation\n")
 	if err := cmd.Run(); err != nil {
-		fmt.Printf("Finished logration with error: %v", err)
+		fmt.Printf("Finished logrotation with error: %v", err)
+	} else {
+		fmt.Println("Finished logrotation")
 	}
 }

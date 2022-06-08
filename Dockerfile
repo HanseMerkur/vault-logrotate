@@ -1,17 +1,29 @@
+FROM golang:1.18 as builder
+WORKDIR /go/src/github.com/HanseMerkur/vault-logrotate
+COPY * ./
+RUN go get -d -v \
+    && go build .
+
+
 FROM alpine:3.16
-LABEL author="Lennart Weller <lennart.weller@hansemerkur.de>
+LABEL author="Lennart Weller <lennart.weller@hansemerkur.de>"
 
 ENV CRONTAB="0 * * * *"
 
+# Same group/user ids as vault container
 RUN apk add --no-cache logrotate \
+    && addgroup -g 1000 crond \
     && adduser \
-        --uid 1000 \
-        --gid 1000 \
-        --no-create-home \
-        --home "/tmp" \
-        --disabled-password \
+        -u 100 \
+        -S \
+        -g crond \
+        -D \
+        -H \
+        -h "/tmp" \
         crond
 
-ADD crond-logrotate /usr/local/bin/crond-logrotate
+COPY --from=builder /go/src/github.com/HanseMerkur/vault-logrotate/vault-logrotate /usr/local/bin/vault-logrotate
 
-ENTRYPOINT ["/usr/local/bin/crond-logrotate"]
+USER crond
+
+ENTRYPOINT ["/usr/local/bin/vault-logrotate"]

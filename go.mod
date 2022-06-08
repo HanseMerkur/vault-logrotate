@@ -1,4 +1,4 @@
-module github.com/HanseMerkur/cron-logrotate
+module github.com/HanseMerkur/vault-logrotate
 
 go 1.18
 

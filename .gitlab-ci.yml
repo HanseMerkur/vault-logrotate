@@ -1,0 +1,14 @@
+---
+stages:
+  - build
+
+container:
+  stage: build
+  image: registry.hanse-merkur.de/hcp/oci/buildah
+  before_script:
+    - IMAGE_NAME=${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_TAG:-latest}
+  script:
+    - export REGISTRY_AUTH_FILE=${HOME}/auth.json
+    - echo "$CI_REGISTRY_PASSWORD" | buildah login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+    - buildah bud -f Dockerfile -t ${IMAGE_NAME} .
+    - buildah push ${IMAGE_NAME}
